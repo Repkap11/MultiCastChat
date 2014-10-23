@@ -1,25 +1,28 @@
 package com.repkap11.multicastchat;
 
 import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.os.Binder;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Messenger;
 import android.util.Log;
-import android.widget.Toast;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.nio.charset.Charset;
 
 public class MultiCastService extends Service {
     static String MESSAGE_RECEIVED = "MESSAGE_RECEIVED";
+    private final static int NOTIFICATION_MESSAGE_RECEIVED = 1;
     DatagramSocket socket = null;
     Handler mHandler = new Handler();
+
     void startListenForUDPBroadcast() {
 
         new Thread(new Runnable() {
@@ -29,7 +32,6 @@ public class MultiCastService extends Service {
                     String iaddress = "192.168.0.255";
                     int port = 56789;
                     InetAddress broadcastIP = InetAddress.getByName(iaddress);
-                    socket = null;
                     while (shouldRestartSocketListen) {
                         //socket.setSoTimeout(1000);
                         if (socket == null || socket.isClosed()) {
@@ -57,7 +59,7 @@ public class MultiCastService extends Service {
     }
 
     private void message(final String message) {
-        Log.e("Paul",message);
+        Log.e("Paul", message);
         /*
         mHandler.post(new Runnable() {
             @Override
@@ -68,10 +70,18 @@ public class MultiCastService extends Service {
         */
     }
 
-    private void broadcastIntent(String senderIP, String message) {
-        Intent intent = new Intent(MultiCastService.MESSAGE_RECEIVED);
-        intent.putExtra(MESSAGE_RECEIVED,new MessageInfo(senderIP,message,ActivityMain.SESSION_NAME));
-        sendBroadcast(intent);
+    private void broadcastIntent(String senderIP, String text) {
+        MessageInfo message = new MessageInfo(senderIP, text, ActivityMain.SESSION_NAME);
+        MessageDatabaseHelper helper = new MessageDatabaseHelper(this);
+        helper.writeMessage(message);
+        if (mIsBoundToActivity) {
+            Intent intent = new Intent(MultiCastService.MESSAGE_RECEIVED);
+            sendBroadcast(intent);
+        } else {
+            NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            Notification notification = buildNotification(message);
+            notificationManager.notify(NOTIFICATION_MESSAGE_RECEIVED, notification);
+        }
     }
 
     private boolean shouldRestartSocketListen = true;
@@ -107,19 +117,46 @@ public class MultiCastService extends Service {
         return START_STICKY;
     }
 
+    public boolean mIsBoundToActivity;
+
     @Override
-    public IBinder onBind(Intent intent) {
-        return null;
+    public boolean onUnbind(Intent intent) {
+        mIsBoundToActivity = false;
+        return true; // ensures onRebind is called
     }
 
-    private Notification buildForegroundNotification(String filename) {
-        Notification.Builder b = new Notification.Builder(this);
-        b.setOngoing(true);
-        b.setContentTitle(getString(R.string.notification_listening))
-                .setContentText("Notification content text")
-                .setSmallIcon(android.R.drawable.stat_sys_download_done)
-                .setTicker("Ticker String");
+    @Override
+    public void onRebind(Intent intent) {
+        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        notificationManager.cancel(NOTIFICATION_MESSAGE_RECEIVED);
+        mIsBoundToActivity = true;
+    }
 
+    private Notification buildNotification(MessageInfo message) {
+
+        PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), NOTIFICATION_MESSAGE_RECEIVED, new Intent(this,ActivityMain.class), PendingIntent.FLAG_ONE_SHOT);
+        Notification.Builder b = new Notification.Builder(this)
+            .setContentTitle(message.mUserName)
+                .setContentText(message.mMessage)
+                .setSmallIcon(android.R.drawable.stat_sys_download_done)
+                .setTicker("Ticker String")
+                .setContentIntent(contentIntent);
         return (b.build());
+    }
+    private final IBinder mBinder = new MyBinder();
+
+    @Override
+    public IBinder onBind(Intent arg0) {
+        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        notificationManager.cancel(NOTIFICATION_MESSAGE_RECEIVED);
+        mIsBoundToActivity = true;
+        Log.d("service","onBind");
+        return mBinder;
+    }
+
+    public class MyBinder extends Binder {
+        MultiCastService getService() {
+            return MultiCastService.this;
+        }
     }
 }
