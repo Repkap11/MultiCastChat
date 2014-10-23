@@ -5,8 +5,7 @@
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="notification_listening">Listening for MultiCast Messages</string>
-
-    <string name="button_add_message">Add Message</string>
+    <string name="button_send_message">Send</string>
     <string name="button_delete_database">Delete Database</string>
 
 </resources>

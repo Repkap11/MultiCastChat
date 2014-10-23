@@ -12,18 +12,27 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
+import android.os.RemoteException;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 
 
 public class ActivityMain extends Activity {
 
+
     //echo -n "For the win" | socat - udp-datagram:192.168.0.255:56789,broadcast
+
+    public static final int ACTIVITY_RESULT_PREFS_UPDATED = 1;
     private ListView mChatList;
+    private EditText mTextBox;
     private Button mAddMessageButton;
     private ActivityMain_ChatListAdapter mChatListAdapter;
     private ServiceConnection mMultiCastServiceConnection;
@@ -36,12 +45,16 @@ public class ActivityMain extends Activity {
         super.onCreate(savedInstanceState);
         mChatList = (ListView) findViewById(R.id.activity_main_chat_list);
         mChatListAdapter = new ActivityMain_ChatListAdapter(this, SESSION_NAME);
+        mChatList.setAdapter(mChatListAdapter);
 
+        mTextBox = (EditText) findViewById(R.id.activity_main_text_box);
+
+        mMessageReciever = new MessageReceiver();
         startService(new Intent(this, MultiCastService.class));
-        mMessageReciever =  new MessageReceiver();
         registerReceiver(mMessageReciever, new IntentFilter(MultiCastService.MESSAGE_RECEIVED));
 
 
+        /*
         Button addMessageButton = (Button) findViewById(R.id.activity_main_chat_button_add_message);
         addMessageButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -61,8 +74,18 @@ public class ActivityMain extends Activity {
 
             }
         });
-        mChatList.setAdapter(mChatListAdapter);
+        */
 
+
+    }
+    public void sendButtonOnClick(View v){
+        Log.e("paul","Send button on click");
+        MessageDatabaseHelper helper = new MessageDatabaseHelper(ActivityMain.this);
+        MessageInfo message = new MessageInfo("Paul", mTextBox.getText().toString(), SESSION_NAME);
+        mTextBox.setText("");
+        helper.writeMessage(message);
+        mChatListAdapter.changeCursor(helper.getMessages(SESSION_NAME));
+        sendMessageToService(message);
     }
 
     @Override
@@ -71,7 +94,7 @@ public class ActivityMain extends Activity {
         if (mMessageReciever != null) {
             unregisterReceiver(mMessageReciever);
         }
-        if (mMultiCastServiceConnection != null){
+        if (mMultiCastServiceConnection != null) {
             unbindService(mMultiCastServiceConnection);
         }
     }
@@ -90,12 +113,26 @@ public class ActivityMain extends Activity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         if (id == R.id.action_settings) {
+            Intent prefIntent = new Intent(this, SettingsActivity.class);
+            startActivityForResult(prefIntent, ACTIVITY_RESULT_PREFS_UPDATED);
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
-    public class MessageReceiver extends BroadcastReceiver {
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (resultCode) {
+            case ACTIVITY_RESULT_PREFS_UPDATED:
+                Log.e("paul", "onActivityResult called");
+                Intent intent = new Intent(this, MultiCastService.class);
+                stopService(intent);
+                startService(intent);
+                break;
+        }
+    }
+
+    private class MessageReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
@@ -107,8 +144,9 @@ public class ActivityMain extends Activity {
             }
         }
     }
+
     private MultiCastService myServiceBinder;
-    public ServiceConnection myConnection = new ServiceConnection() {
+    private ServiceConnection myConnection = new ServiceConnection() {
 
         public void onServiceConnected(ComponentName className, IBinder binder) {
             myServiceBinder = ((MultiCastService.MyBinder) binder).getService();
@@ -137,10 +175,24 @@ public class ActivityMain extends Activity {
 
     @Override
     protected void onPause() {
+        doUnBindService();
+        super.onPause();
+    }
+
+    private void doUnBindService() {
         if (myServiceBinder != null) {
             unbindService(myConnection);
             myServiceBinder = null;
         }
-        super.onPause();
+    }
+
+    private void doStopService() {
+        stopService(new Intent(this, MultiCastService.class));
+    }
+
+    private void sendMessageToService(MessageInfo messageInfo){
+        Intent intent = new Intent(MultiCastService.TRANSMIT_MESSAGE);
+        intent.putExtra(MultiCastService.TRANSMIT_MESSAGE,messageInfo);
+        sendBroadcast(intent);
     }
 }

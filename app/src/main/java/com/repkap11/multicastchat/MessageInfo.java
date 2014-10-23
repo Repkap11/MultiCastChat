@@ -3,6 +3,8 @@ package com.repkap11.multicastchat;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.nio.charset.Charset;
+
 public class MessageInfo implements Parcelable {
     public static final String KEY_MESSAGE_INFO = "KEY_MESSAGE_INFO";
 
@@ -21,6 +23,10 @@ public class MessageInfo implements Parcelable {
         mSessionName = sessionName;
         mTimeStamp = timeStamp;
     }
+    public byte[]getBytesToTransmit(){
+        return mMessage.getBytes(Charset.defaultCharset());
+    }
+
 
     @Override
     public int describeContents() {
