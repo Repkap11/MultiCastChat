@@ -1,0 +1,42 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    tools:context=".ActivityMain">
+
+    <ListView
+        android:id="@+id/activity_main_chat_list"
+        tools:listitem="@layout/activity_main_chat_list_item"
+        android:layout_width="wrap_content"
+        android:stackFromBottom="true"
+        android:transcriptMode="normal"
+        android:layout_alignParentTop="true"
+        android:layout_above="@+id/activity_main_lower_buttons"
+        android:layout_height="wrap_content" />
+
+    <LinearLayout
+        android:id="@id/activity_main_lower_buttons"
+        android:layout_width="match_parent"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal"
+        android:layout_height="wrap_content">
+
+        <Button
+            android:layout_weight="1"
+            android:text="@string/button_add_message"
+            android:id='@+id/activity_main_chat_button_add_message'
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:layout_weight="1"
+            android:text="@string/button_delete_database"
+            android:id='@+id/activity_main_chat_button_delete_database'
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+</RelativeLayout>
