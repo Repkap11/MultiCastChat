@@ -4,8 +4,12 @@
     <string name="app_name">MultiCastChat</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
-    <string name="notification_listening">Listening for MultiCast Messages</string>
+    <string name="notification_listening">Listening for Messages</string>
+	<string name="notification_touch_to_open">Touch to open</string>
+
     <string name="button_send_message">Send</string>
     <string name="button_delete_database">Delete Database</string>
+    <string name="activity_main_text_box_hint">Write a message...</string>
+
 
 </resources>

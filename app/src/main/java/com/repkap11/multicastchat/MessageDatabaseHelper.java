@@ -24,6 +24,7 @@ public class MessageDatabaseHelper {
         values.put(MessageEntry.COLUMN_NAME_CHAT_SESSION, message.mSessionName);
         values.put(MessageEntry.COLUMN_NAME_MESSAGE, message.mMessage);
         values.put(MessageEntry.COLUMN_NAME_TIMESTAMP, message.mTimeStamp);
+		values.put(MessageEntry.COLUMN_NAME_FROM_LOCAL_USER, message.mFromLocalUser);
 
         // Insert the new row, returning the primary key value of the new row
         long newRowId;
@@ -42,7 +43,8 @@ public class MessageDatabaseHelper {
                 MessageEntry._ID,
                 MessageEntry.COLUMN_NAME_USER_NAME,
                 MessageEntry.COLUMN_NAME_MESSAGE,
-                MessageEntry.COLUMN_NAME_TIMESTAMP
+                MessageEntry.COLUMN_NAME_TIMESTAMP,
+				MessageEntry.COLUMN_NAME_FROM_LOCAL_USER
         };
 
         String selection = MessageEntry.COLUMN_NAME_CHAT_SESSION + " =?";

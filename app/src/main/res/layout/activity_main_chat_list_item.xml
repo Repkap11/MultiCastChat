@@ -1,24 +1,34 @@
-
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+	xmlns:tools="http://schemas.android.com/tools"
+	android:id="@+id/activity_main_chat_list_item_root"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:paddingBottom="2dp"
+	android:paddingLeft="4dp"
+	android:paddingRight="4dp"
+	android:paddingTop="2dp"
+	android:showDividers="none"
+	tools:context=".ActivityMain">
 
-    <TextView
-        android:textSize="18dp"
-        android:padding="2dp"
-        android:id="@+id/activity_main_chat_list_item_text_sender_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+	<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+		xmlns:tools="http://schemas.android.com/tools"
+		android:layout_width="wrap_content"
+		android:layout_height="match_parent"
+		android:background="@drawable/activity_main_chat_list_item_background"
+		android:orientation="vertical"
+		android:padding="5dp">
 
-    <TextView
-        android:textSize="14dp"
-        android:paddingRight="2dp"
-        android:paddingTop="2dp"
-        android:paddingBottom="2dp"
-        android:paddingLeft="10dp"
-        android:id="@+id/activity_main_chat_list_item_text_message"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+		<TextView
+			android:id="@+id/activity_main_chat_list_item_text_sender_name"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:textSize="18dp" />
 
+		<TextView
+			android:id="@+id/activity_main_chat_list_item_text_message"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:textSize="14dp" />
+
+	</LinearLayout>
 </LinearLayout>

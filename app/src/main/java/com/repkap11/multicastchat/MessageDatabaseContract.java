@@ -17,6 +17,7 @@ public final class MessageDatabaseContract {
         public static final String COLUMN_NAME_USER_NAME = "COLUMN_NAME_USER_NAME";
         public static final String COLUMN_NAME_MESSAGE = "COLUMN_NAME_MESSAGE";
         public static final String COLUMN_NAME_TIMESTAMP = "COLUMN_NAME_TIMESTAMP";
+		public static final String COLUMN_NAME_FROM_LOCAL_USER = "COLUMN_NAME_FROM_LOCAL_USER";
         public static final String COLUMN_NAME_NULLABLE = "null";
     }
 }
