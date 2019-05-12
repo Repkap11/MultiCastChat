@@ -41,8 +41,8 @@ public MessageInfo(byte[] data, int startingIndex, int length) {
 		long timeStamp = jObject.getLong("mTimeStamp");
 		createInstance(userName, message, sessionName, timeStamp, 0);
 	} catch(Exception e) {
-		createInstance("Error:", rawData, ActivityMain.SESSION_NAME, System.currentTimeMillis(), 0);
-		e.printStackTrace();
+		createInstance("Unknown:", rawData, ActivityMain.SESSION_NAME, System.currentTimeMillis(), 0);
+		//Fallback ot just sending the raw data as text...
 	}
 }
 

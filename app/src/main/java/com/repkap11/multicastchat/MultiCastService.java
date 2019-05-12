@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
+import android.net.DhcpInfo;
 import android.net.wifi.WifiManager;
 import android.os.Binder;
 import android.os.Build;
@@ -22,10 +23,15 @@ import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
+import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.InterfaceAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.nio.channels.DatagramChannel;
+import java.util.Enumeration;
 
 public class MultiCastService extends Service {
     public static final String MESSAGE_RECEIVED = "MESSAGE_RECEIVED";
@@ -49,9 +55,10 @@ public class MultiCastService extends Service {
                 ml.acquire();
                 byte[] buf = new byte[2200];
                 try {
-                    String iaddress = "192.168.1.255";
                     int port = 56789;
-                    InetAddress broadcastIP = InetAddress.getByName(iaddress);
+                    InetAddress broadcastIP = getBroadcastAddress();
+                    Log.e(TAG, "run: address: " + broadcastIP.getHostAddress());
+
                     while (shouldRestartSocketListen) {
                         //socket.setSoTimeout(1000);
                         if (socket == null || socket.isClosed()) {
@@ -84,9 +91,8 @@ public class MultiCastService extends Service {
         new Thread(new Runnable() {
             public void run() {
                 try {
-                    String iaddress = "192.168.0.255";
                     int port = 56789;
-                    InetAddress broadcastIP = InetAddress.getByName(iaddress);
+                    InetAddress broadcastIP = getBroadcastAddress();
                     if (sendSocket == null || sendSocket.isClosed()) {
                         DatagramChannel channel = DatagramChannel.open();
                         sendSocket = channel.socket();
@@ -127,6 +133,7 @@ public class MultiCastService extends Service {
     private void broadcastIntentMessageRecieved(MessageInfo message) {
         MessageDatabaseHelper helper = new MessageDatabaseHelper(this);
         helper.writeMessage(message);
+
         if (mIsBoundToActivity) {
             Intent intent = new Intent(MultiCastService.MESSAGE_RECEIVED);
             sendBroadcast(intent);
@@ -240,9 +247,29 @@ public class MultiCastService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         shouldRestartSocketListen = true;
         startListenForUDPBroadcast();
-        Log.i("UDP", "Service started");
-        //createStickyNotification();
         return START_STICKY;
+    }
+
+    private InetAddress getBroadcastAddress() throws IOException {
+        WifiManager myWifiManager = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
+        DhcpInfo myDhcpInfo = myWifiManager.getDhcpInfo();
+        if (myDhcpInfo == null) {
+            Log.w(TAG, "Could not get broadcast address");
+            return null;
+        }
+        byte[] quads2 = new byte[4];
+        for (int k = 0; k < 4; k++)
+            quads2[k] = (byte) ((myDhcpInfo.ipAddress >> k * 8) & 0xFF);
+        NetworkInterface networkInterface = NetworkInterface.getByInetAddress(InetAddress.getByAddress(quads2));
+        for (InterfaceAddress address : networkInterface.getInterfaceAddresses()) {
+            //short netPrefix = address.getNetworkPrefixLength();
+            InetAddress adr = address.getBroadcast();
+            if (adr != null) {
+                return adr;
+            }
+        }
+        Log.e(TAG, "getBroadcastAddress: Unable to find broadcast address");
+        return null;
     }
 
     public boolean mIsBoundToActivity;
@@ -262,13 +289,24 @@ public class MultiCastService extends Service {
 
     private Notification buildNotification(MessageInfo message) {
 
-        PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), NOTIFICATION_MESSAGE_RECEIVED, new Intent(this, ActivityMain.class), PendingIntent.FLAG_ONE_SHOT);
-        Notification.Builder b = new Notification.Builder(this)
-                .setContentTitle(message.mUserName)
+        Intent intent = new Intent(this, ActivityMain.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(
+                getApplicationContext(),
+                NOTIFICATION_MESSAGE_RECEIVED,
+                intent, PendingIntent.FLAG_ONE_SHOT);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+        Notification.Builder b;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            b = new Notification.Builder(this, NOTIFICATION_CHANNEL_ID);
+        } else {
+            b = new Notification.Builder(this);
+        }
+
+        b.setContentTitle(message.mUserName)
                 .setContentText(message.mMessage)
                 .setSmallIcon(android.R.drawable.stat_sys_download_done)
                 .setTicker(message.mUserName + ": " + message.mMessage)
-                .setContentIntent(contentIntent);
+                .setContentIntent(pendingIntent);
         if (Build.VERSION.SDK_INT >= 21) {
             b.setColor(getResources().getColor(R.color.colorPrimary));
         }
