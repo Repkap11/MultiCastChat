@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<color name="colorPrimary">#ff1968ff</color>
-	<color name="colorPrimaryDark">#ff1618c8</color>
+    <color name="colorPrimary">#ff1968ff</color>
+    <color name="colorPrimaryDark">#ff1618c8</color>
+    <color name="colorAccent">#D81B60</color>
     <color name="message_color_main">@color/colorPrimary</color>
     <color name="message_color_shadow">@color/colorPrimaryDark</color>
 	<color name="bottomBackgroundLineColor">@color/colorPrimaryDark</color>
 	<color name="cursorColor">@color/colorPrimary</color>
-
 </resources>

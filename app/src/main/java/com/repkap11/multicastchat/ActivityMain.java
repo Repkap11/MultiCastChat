@@ -7,8 +7,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -18,7 +20,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
-public class ActivityMain extends Activity {
+public class ActivityMain extends AppCompatActivity {
 
 //echo -n "For the win" | socat - udp-datagram:192.168.0.255:56789,broadcast
 
@@ -42,7 +44,11 @@ protected void onCreate(Bundle savedInstanceState) {
 	mTextBox = (EditText) findViewById(R.id.activity_main_text_box);
 
 	mMessageReciever = new MessageReceiver();
-	startService(new Intent(this, MultiCastService.class));
+	if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+		startForegroundService(new Intent(this, MultiCastService.class));
+	} else {
+		startService(new Intent(this, MultiCastService.class));
+	}
 	registerReceiver(mMessageReciever, new IntentFilter(MultiCastService.MESSAGE_RECEIVED));
 	registerReceiver(mMessageReciever, new IntentFilter(MultiCastService.SERVICE_EXITING_EXIT_ACTIVITY));
 

@@ -1,33 +1,23 @@
 <resources>
-	<!-- All versions here -->
-	<style name="AppTheme" parent="AppThemeBase">
-		<item name="android:itemTextAppearance">@style/MenuItemTextApearance</item>
-	</style>
-	<!-- Fallback here. -->
-	<style name="AppThemeBase" parent="android:Theme.Holo.Light.DarkActionBar"></style>
 
-	<style name="SettingsTheme" parent="AppTheme"></style>
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
 
-	<style name="MainTheme" parent="AppTheme">
-		<item name="android:textColor">@android:color/white</item>
-		<item name="android:editTextColor">@android:color/white</item>
-		<item name="android:textColorHint">@android:color/white</item>
-	</style>
+    <style name="EventContent" />
 
-	<style name="MenuItemTextApearance" parent="@android:style/TextAppearance.Widget.IconMenu.Item">
-		<item name="android:textColor">@android:color/black</item>
-	</style>
+    <style name="EventContent.Title">
+        <item name="android:textColor">#111111</item>
+        <item name="android:textSize">16dp</item>
+    </style>
 
+    <style name="EventContent.Info">
 
-	<style name="EventContent" />
-
-	<style name="EventContent.Title">
-		<item name="android:textColor">#111111</item>
-		<item name="android:textSize">16dp</item>
-	</style>
-
-	<style name="EventContent.Info">
-		<item name="android:textSize">14dp</item>
-		<item name="android:textColor">#707070</item>
-	</style>
+        <item name="android:textSize">14dp</item>
+        <item name="android:textColor">#707070</item>
+    </style>
 </resources>
