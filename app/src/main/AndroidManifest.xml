@@ -23,7 +23,7 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".MultiCastService" />z
+        <service android:name=".MultiCastService" />
 
         <activity
             android:name=".SettingsActivity"

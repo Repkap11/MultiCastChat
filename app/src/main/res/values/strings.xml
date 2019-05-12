@@ -1,9 +1,9 @@
 <resources>
-   <string name="app_name">MultiCastChat</string>
-    <string name="hello_world">Hello world!</string>
+    <string name="app_name">MultiCastChat</string>
     <string name="action_settings">Settings</string>
     <string name="notification_listening">Listening for Messages</string>
-	<string name="notification_touch_to_open">Touch to open</string>
+    <string name="notification_touch_to_open">Touch to open</string>
+    <string name="notification_stop_listening">Touch to open</string>
 
     <string name="button_send_message">Send</string>
     <string name="button_delete_database">Delete Database</string>

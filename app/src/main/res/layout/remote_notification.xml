@@ -10,11 +10,11 @@
 		android:layout_height="@android:dimen/notification_large_icon_height"
 		android:layout_alignParentLeft="true"
 		android:background="@drawable/notification_image"
-		android:padding="22dp"
 		android:src="@android:color/holo_red_dark" />
 
 	<LinearLayout
 		android:layout_centerVertical="true"
+		android:paddingLeft="10dp"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:layout_toLeftOf="@+id/notification_button_exit"
@@ -25,14 +25,14 @@
 			android:layout_width="fill_parent"
 			android:layout_height="wrap_content"
 			android:gravity="center_vertical"
-			android:text="Time to Work"
+			android:text="@string/notification_listening"
 			android:textAppearance="@style/EventContent.Title" />
 
 		<TextView
 			android:layout_width="fill_parent"
 			android:layout_height="wrap_content"
 			android:gravity="center_vertical"
-			android:text="Touch to disable USB debugging."
+			android:text="@string/notification_stop_listening"
 			android:textAppearance="@style/EventContent.Info" />
 
 
@@ -41,8 +41,7 @@
 	<Button
 		android:id="@id/notification_button_exit"
 		android:layout_width="wrap_content"
-		android:layout_height="match_parent"
+		android:layout_height="wrap_content"
 		android:layout_alignParentRight="true"
-		android:layout_margin="4dp"
 		android:text="Exit" />
 </RelativeLayout>

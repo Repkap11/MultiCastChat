@@ -49,7 +49,7 @@ public class MultiCastService extends Service {
                 ml.acquire();
                 byte[] buf = new byte[2200];
                 try {
-                    String iaddress = "192.168.0.255";
+                    String iaddress = "192.168.1.255";
                     int port = 56789;
                     InetAddress broadcastIP = InetAddress.getByName(iaddress);
                     while (shouldRestartSocketListen) {
@@ -154,6 +154,7 @@ public class MultiCastService extends Service {
 
     PowerManager.WakeLock mWakeLock = null;
     WifiManager.MulticastLock mMultiCastLock = null;
+    private static final String NOTIFICATION_CHANNEL_ID = "paul_channel3";
 
     @Override
     public void onCreate() {
@@ -171,36 +172,56 @@ public class MultiCastService extends Service {
         registerReceiver(mMessageReceiver, new IntentFilter(MultiCastService.TRANSMIT_MESSAGE));
         registerReceiver(mMessageReceiver, new IntentFilter(MultiCastService.REQUEST_EXIT));
         //Toast.makeText(this, "Service Created", Toast.LENGTH_SHORT).show();
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startMyOwnForeground();
+            createChannel();
         } else {
-            startForeground(42, new Notification());
         }
+
+        Intent intentMain = new Intent(this, ActivityMain.class);
+        intentMain.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        //RemoteViews remoteViewSmall = new RemoteViews(getPackageName(), R.layout.remote_notification);
+        RemoteViews remoteViewLarge = new RemoteViews(getPackageName(), R.layout.remote_notification);
+        PendingIntent pendingIntentClick = PendingIntent.getActivity(this, 0, intentMain, PendingIntent.FLAG_UPDATE_CURRENT);
+
+
+        Intent intentExit = new Intent(MultiCastService.REQUEST_EXIT);
+        PendingIntent pendingIntentExit = PendingIntent.getBroadcast(this, 0, intentExit, 0);
+        remoteViewLarge.setOnClickPendingIntent(R.id.notification_button_exit, pendingIntentExit);
+
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+                .setSmallIcon(android.R.drawable.ic_input_add)
+                .setColor(getResources().getColor(R.color.colorAccent))
+                .setTicker(getString(R.string.notification_listening))
+                .setContentTitle(getString(R.string.notification_listening))
+                .setContentText(getString(R.string.notification_touch_to_open))
+                .setStyle(new NotificationCompat.DecoratedCustomViewStyle())
+                .setPriority(Notification.PRIORITY_MIN)
+                //.setCustomContentView(remoteViewSmall)
+                .setCustomBigContentView(remoteViewLarge);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            builder.setCategory(Notification.CATEGORY_SERVICE);
+        }
+        //builder.setSubText("setSubText");
+
+        builder.setContentIntent(pendingIntentClick);
+        //builder.setContent(remoteView);
+        Notification notification = builder.build();
+        //notification.setLatestEventInfo(this, "title", "text", pendingIntent);
+        notification.flags |= Notification.FLAG_ONGOING_EVENT | Notification.FLAG_FOREGROUND_SERVICE | Notification.FLAG_NO_CLEAR;
+
+        startForeground(42, notification);
     }
-    private static final String NOTIFICATION_CHANNEL_ID = "paul_channel3";
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    private void startMyOwnForeground() {
+    private void createChannel() {
         NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        //if (manager.getNotificationChannel(NOTIFICATION_CHANNEL_ID) == null) {
-            Log.e(TAG, "startMyOwnForeground: Creating channel:"+NOTIFICATION_CHANNEL_ID);
-            String channelName = "My Background Service";
-            NotificationChannel chan = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_DEFAULT);
-            chan.setLightColor(Color.RED);
-            chan.setLockscreenVisibility(Notification.VISIBILITY_SECRET);
-            manager.createNotificationChannel(chan);
-        //}
-
-        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID);
-        Notification notification = notificationBuilder.setOngoing(true)
-                .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle("App is running in background")
-                .setPriority(NotificationManager.IMPORTANCE_MIN)
-                .setCategory(Notification.CATEGORY_SERVICE)
-                .setChannelId(NOTIFICATION_CHANNEL_ID)
-                .build();
-        Log.e(TAG, "startMyOwnForeground: calling startForground:"+notification.getChannelId());
-        startForeground(42, notification);
+        String channelName = "Listening for Messages";
+        NotificationChannel chan = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_DEFAULT);
+        chan.setLightColor(Color.RED);
+        chan.setLockscreenVisibility(Notification.VISIBILITY_SECRET);
+        manager.createNotificationChannel(chan);
     }
 
     @Override
@@ -222,38 +243,6 @@ public class MultiCastService extends Service {
         Log.i("UDP", "Service started");
         //createStickyNotification();
         return START_STICKY;
-    }
-
-    private void createStickyNotification() {
-        Intent main = new Intent(this, ActivityMain.class);
-        main.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        RemoteViews remoteView = new RemoteViews(getPackageName(), R.layout.remote_notification);
-
-        PendingIntent pendingIntentClick = PendingIntent.getActivity(this, 0, main, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        Intent intentForPending = new Intent(MultiCastService.REQUEST_EXIT);
-        PendingIntent stopServiceIntent = PendingIntent.getBroadcast(this, 0, intentForPending, 0);
-        remoteView.setOnClickPendingIntent(R.id.notification_button_exit, stopServiceIntent);
-
-        Notification.Builder builder = new Notification.Builder(this);
-        builder.setSmallIcon(android.R.drawable.ic_input_add);
-        if (Build.VERSION.SDK_INT >= 21) {
-            builder.setColor(getResources().getColor(R.color.colorAccent));
-        }
-        builder.setTicker(getString(R.string.notification_listening));
-        builder.setContentTitle(getString(R.string.notification_listening));
-        builder.setContentText(getString(R.string.notification_touch_to_open));
-        //builder.setSubText("setSubText");
-        builder.setPriority(Notification.PRIORITY_MIN);
-
-        builder.setContentIntent(pendingIntentClick);
-        builder.setContent(remoteView);
-        Notification notification = builder.build();
-        //notification.setLatestEventInfo(this, "title", "text", pendingIntent);
-        notification.flags |= Notification.FLAG_ONGOING_EVENT | Notification.FLAG_FOREGROUND_SERVICE | Notification.FLAG_NO_CLEAR;
-
-        startForeground(2, notification);
-
     }
 
     public boolean mIsBoundToActivity;
@@ -323,6 +312,7 @@ public class MultiCastService extends Service {
                 Intent it = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
                 MultiCastService.this.sendBroadcast(it);
                 MultiCastService.this.stopForeground(true);
+                MultiCastService.this.stopSelf();
             }
         }
     }
