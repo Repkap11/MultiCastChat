@@ -161,7 +161,9 @@ public class MultiCastService extends Service {
 
     PowerManager.WakeLock mWakeLock = null;
     WifiManager.MulticastLock mMultiCastLock = null;
-    private static final String NOTIFICATION_CHANNEL_ID = "paul_channel3";
+    private static final String NOTIFICATION_CHANNEL_ID_NO_VIBE = "NOTIFICATION_CHANNEL_ID";
+    private static final String NOTIFICATION_CHANNEL_ID_VIBE = "NOTIFICATION_CHANNEL_ID_VIBE";
+
 
     @Override
     public void onCreate() {
@@ -197,7 +199,7 @@ public class MultiCastService extends Service {
         remoteViewLarge.setOnClickPendingIntent(R.id.notification_button_exit, pendingIntentExit);
 
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID_NO_VIBE)
                 .setSmallIcon(android.R.drawable.ic_input_add)
                 .setColor(getResources().getColor(R.color.colorAccent))
                 .setTicker(getString(R.string.notification_listening))
@@ -224,11 +226,22 @@ public class MultiCastService extends Service {
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void createChannel() {
         NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        String channelName = "Listening for Messages";
-        NotificationChannel chan = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_DEFAULT);
-        chan.setLightColor(Color.RED);
-        chan.setLockscreenVisibility(Notification.VISIBILITY_SECRET);
-        manager.createNotificationChannel(chan);
+        {
+            String channelName = "Listening in the Background";
+            NotificationChannel chan = new NotificationChannel(NOTIFICATION_CHANNEL_ID_NO_VIBE, channelName, NotificationManager.IMPORTANCE_MIN);
+            chan.setLightColor(Color.BLUE);
+            chan.enableVibration(true);
+            chan.setLockscreenVisibility(Notification.VISIBILITY_SECRET);
+            manager.createNotificationChannel(chan);
+        }
+        {
+            String channelName = "Notifications for Message";
+            NotificationChannel chan = new NotificationChannel(NOTIFICATION_CHANNEL_ID_VIBE, channelName, NotificationManager.IMPORTANCE_DEFAULT);
+            chan.enableLights(false);
+            chan.enableVibration(true);
+            chan.setLockscreenVisibility(Notification.VISIBILITY_SECRET);
+            manager.createNotificationChannel(chan);
+        }
     }
 
     @Override
@@ -297,7 +310,7 @@ public class MultiCastService extends Service {
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
         Notification.Builder b;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            b = new Notification.Builder(this, NOTIFICATION_CHANNEL_ID);
+            b = new Notification.Builder(this, NOTIFICATION_CHANNEL_ID_VIBE);
         } else {
             b = new Notification.Builder(this);
         }

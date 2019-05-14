@@ -3,7 +3,7 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 28
     defaultConfig {
-        applicationId "com.repkap11.multicastchat"
+        applicationId "com.repkap11.repchat"
         minSdkVersion 19
         targetSdkVersion 28
         versionCode 1

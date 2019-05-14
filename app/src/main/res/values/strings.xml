@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">MultiCastChat</string>
+    <string name="app_name">RepChat</string>
     <string name="action_settings">Settings</string>
     <string name="notification_listening">Listening for Messages</string>
     <string name="notification_touch_to_open">Touch to open</string>
