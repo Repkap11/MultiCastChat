@@ -200,15 +200,15 @@ public class MultiCastService extends Service {
 
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID_NO_VIBE)
-                .setSmallIcon(android.R.drawable.ic_input_add)
-                .setColor(getResources().getColor(R.color.colorAccent))
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setColor(getResources().getColor(R.color.colorPrimary))
                 .setTicker(getString(R.string.notification_listening))
                 .setContentTitle(getString(R.string.notification_listening))
                 .setContentText(getString(R.string.notification_touch_to_open))
                 .setStyle(new NotificationCompat.DecoratedCustomViewStyle())
                 .setPriority(Notification.PRIORITY_MIN)
-                //.setCustomContentView(remoteViewSmall)
                 .setCustomBigContentView(remoteViewLarge);
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             builder.setCategory(Notification.CATEGORY_SERVICE);
         }
